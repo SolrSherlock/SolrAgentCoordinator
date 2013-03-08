@@ -98,16 +98,25 @@ public class AgentListenerClient {
 			    	System.out.println("YUP "+skt+"  "+System.currentTimeMillis());
 			    	if (isRunning && skt != null) {
 			    		System.out.println("ClientWorker working "+skt.isConnected()+" "+skt+" "+System.currentTimeMillis());
-						BufferedReader in = new BufferedReader(new
-								InputStreamReader(skt.getInputStream()));
-						System.out.println("AgentListnerClient-1 "+in.ready());
-						while (!in.ready()) {
-							if (!isRunning) return;
-						}					     
-						//handleDocument(in, skt);
-						handleDocument(skt);
-					   // skt = null;
-			    		System.out.println("ClientWorker worked "+skt.isConnected()+" "+skt+" "+System.currentTimeMillis());
+						InputStreamReader rdr = null;
+						try {
+							rdr = new InputStreamReader(skt.getInputStream());
+						} catch (Exception e) {
+							//do nothing
+							//this is to deal with external servers dropping out
+						}
+						if (rdr != null) {
+				    		BufferedReader in = new BufferedReader(rdr);
+							System.out.println("AgentListnerClient-1 "+in.ready());
+							while (!in.ready()) {
+								if (!isRunning) return;
+							}					     
+							//handleDocument(in, skt);
+							handleDocument(skt);
+						   // skt = null;
+				    		System.out.println("ClientWorker worked "+skt.isConnected()+" "+skt+" "+System.currentTimeMillis());
+			    	
+						}
 			    	}
 		    	}
 			} catch(Exception e) {
