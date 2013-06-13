@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, TopicQuests
+ * Copyright 2013, TopicQuests
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,58 +14,33 @@
  * and limitations under the License.
  */
 package org.topicquests.tuplespace;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Properties;
-
-import org.topicquests.tcp.AgentListenerClient;
-import org.topicquests.tcp.SolrListenerClient;
+import java.util.Hashtable;
 import org.semispace.api.ISemiSpace;
 import org.semispace.SemiSpace;
 import org.topicquests.util.LoggingPlatform;
-import org.topicquests.util.Tracer;
+
 /**
  * @author park
  *
  */
 public class TupleSpaceEnvironment {
 	private LoggingPlatform log = LoggingPlatform.getInstance();
-	private SolrListenerClient solrListener;
 	private ISemiSpace tupleSpace;
-	private int port = 0;
-	private int tsport = 0;
-	private AgentListenerClient agentClient;
+//	private Hashtable<String,Object>props;
 	private long _curtime = System.currentTimeMillis();
 	private Object synchObject = new Object();
 	private TupleFactory factory;
 	
 	/**
-	 * 
+	 * @param props
 	 */
-	public TupleSpaceEnvironment() {
-		Properties p = new Properties();
-		String spacename="SemiSpace";//default
-		try {
-			//file must be in classpath
-			File f = new File("agents.properties");
-			FileInputStream fis = new FileInputStream(f);
-			p.load(fis);
-			fis.close();
-			String portx = p.getProperty("port");
-			port = Integer.parseInt(portx);
-			portx = p.getProperty("tsport");
-			tsport = Integer.parseInt(portx);
-			spacename = p.getProperty("spacename");
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+	public TupleSpaceEnvironment(Hashtable<String,Object>props) {
+//		this.props = props;
 		factory = new TupleFactory(this);
+		String spacename = (String)props.get("SemiSpaceName");
 		tupleSpace = new SemiSpace(spacename);
-		solrListener = new SolrListenerClient(port,tupleSpace,factory);
-		agentClient = new AgentListenerClient(this,tsport);
-		AddShutdownHook hook = new AddShutdownHook();
-		hook.attachShutDownHook();
+//		AddShutdownHook hook = new AddShutdownHook();
+//		hook.attachShutDownHook();
 	}
 
 	/**
@@ -90,18 +65,15 @@ public class TupleSpaceEnvironment {
 	public TupleFactory getTupleFactory() {
 		return factory;
 	}
+	
 	public ISemiSpace getTupleSpace() {
 		return tupleSpace;
 	}
 	
-	public AgentListenerClient getAgentListenerClient() {
-		return agentClient;
-	}
 	public void shutDown() {
-		solrListener.shutDown();
 		log.shutDown();
 	}
-	
+	/** function already in AgentEnvironment
 	public class AddShutdownHook{
 		 public void attachShutDownHook(){
 		  Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -114,6 +86,7 @@ public class TupleSpaceEnvironment {
 		  System.out.println("Shut Down Hook Attached.");
 		 }
 	}
+	*/
 	protected void finalize()
             throws Throwable {
 		shutDown();
@@ -132,7 +105,4 @@ public class TupleSpaceEnvironment {
 		log.record(msg);
 	}
 
-	public Tracer getTracer(String name) {
-		return log.getTracer(name);
-	}
 }
