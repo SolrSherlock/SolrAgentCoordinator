@@ -32,11 +32,14 @@ import org.semispace.api.ISemiSpaceTuple;
  */
 public class SolrListenerClient {
 	private int port = 0;
+	private String serverName = "localhost";
 	private ClientWorker client;
 	private Worker worker;
 	private ISemiSpace tupleSpace;
 	private TupleFactory factory;
 	private long tenMinutes = 60 * 1000 * 10;
+	private final String NEW_DOCUMENT = "NewDocument";
+	private final String HARVEST_DOCUMENT = "HarvestDocument";
 	
 	/**
 	 * 
@@ -44,8 +47,9 @@ public class SolrListenerClient {
 	 * @param space
 	 * @param f
 	 */
-	public SolrListenerClient(int port, ISemiSpace space, TupleFactory f) {
+	public SolrListenerClient(String serverName, int port, ISemiSpace space, TupleFactory f) {
 		this.port = port;
+		this.serverName = serverName;
 		client = new ClientWorker();
 		worker = new Worker();
 		tupleSpace = space;
@@ -97,7 +101,7 @@ public class SolrListenerClient {
 				buf.setLength(0);
 			     try {
 			    	 try {
-			    		 skt = new Socket("localhost", port);
+			    		 skt = new Socket(InetAddress.getByName(serverName), port);
 			    		 waiting = false;
 			    	 } catch (Exception e) {
 			    		 System.out.println("Waiting "+port);
@@ -182,11 +186,21 @@ public class SolrListenerClient {
 		 * @param doc
 		 */
 		void handleDocument(String doc) {
-			ISemiSpaceTuple result = factory.newTuple(ITupleTags.NEW_SOLR_DOC);
-			result.set(ITupleFields.CARGO, doc);
+			//We get two kinds of documents from Solr:
+			//  those which get merge and harvest
+			//  those which get harvest only
+			int where = doc.indexOf('|');
+			String tag = doc.substring(where);
+			String cargo = doc.substring(where+1);
+			String theTag = ITupleTags.NEW_SOLR_DOC;
+			if (tag.startsWith(HARVEST_DOCUMENT))
+				theTag = ITupleTags.HARVEST_SOLR_DOC;
+			ISemiSpaceTuple result = factory.newTuple(theTag);
+			result.set(ITupleFields.CARGO, cargo);
 			if (tupleSpace != null) // unittest will send in null
 				tupleSpace.write(result,tenMinutes);
-			System.out.println("HANDLING "+doc);
+			System.out.println("GOT "+doc);
+			System.out.println("HANDLING "+cargo);
 		}
 	}
 }

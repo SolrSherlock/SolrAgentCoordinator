@@ -15,9 +15,12 @@
  */
 package org.topicquests.tcp;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 
-import net.sf.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 
 import org.semispace.api.IConstants;
 import org.semispace.api.ISemiSpace;
@@ -34,6 +37,7 @@ public class AgentListenerClient {
 //	Tracer tracer;
 	private ISemiSpace tupleSpace;
 	private int port = 0;
+	private String serverName = "localhost";
 	private ClientWorker client;
 //	private Worker worker;
 	private TupleFactory factory;
@@ -42,15 +46,17 @@ public class AgentListenerClient {
 	/**
 	 * 
 	 */
-	public AgentListenerClient(TupleSpaceEnvironment env, int port) {
+	public AgentListenerClient(TupleSpaceEnvironment env, String serverName, int port) {
 		environment = env;
 		factory = environment.getTupleFactory();
 		tupleSpace = environment.getTupleSpace();
 //		tracer = environment.getTracer("AgentListenerClient");
 		this.port = port;
+		this.serverName = serverName;
 		environment.logDebug("AgentListenerClient "+port);
 		client = new ClientWorker();
 //		worker = new Worker();
+		environment.logDebug("AgentListenerClient starting "+factory+" "+serverName+" "+port);
 	}
 
 	public void shutDown() {
@@ -69,10 +75,12 @@ public class AgentListenerClient {
 	class ClientWorker extends Thread {
 		private boolean isRunning = true;
 		private Object synchObject = new Object();
+		private JSONParser parser;
 //		private Object synchObject2 = new Object();
 		
 		ClientWorker () {
 			isRunning = true;
+			parser = new JSONParser();
 			this.start();
 		}
 		
@@ -88,7 +96,7 @@ public class AgentListenerClient {
 		    	while (isRunning) {
 				System.out.println("ClientWorker Listening on "+port);
 					try {
-					skt = new Socket("localhost", port);
+					skt = new Socket(InetAddress.getByName(serverName), port);
 					} catch (Exception e) {
 						//must wait
 						try {
@@ -97,7 +105,7 @@ public class AgentListenerClient {
 					}
 			    	System.out.println("YUP "+skt+"  "+System.currentTimeMillis());
 			    	if (isRunning && skt != null) {
-			    		System.out.println("ClientWorker working "+skt.isConnected()+" "+skt+" "+System.currentTimeMillis());
+			    		environment.logDebug("ClientWorker working "+skt.isConnected()+" "+skt+" "+System.currentTimeMillis());
 						InputStreamReader rdr = null;
 						try {
 							rdr = new InputStreamReader(skt.getInputStream());
@@ -125,7 +133,7 @@ public class AgentListenerClient {
 			}		
 		}
 		
-		void handleDocument(Socket doc) {
+		void handleDocument(Socket doc) throws Exception {
 			StringBuilder buf = new StringBuilder();
 			String line;
 			try {
@@ -141,11 +149,11 @@ public class AgentListenerClient {
 //				in.close();
 				String json = buf.toString();
 				environment.logDebug("AgentListenerClient- "+buf);
-				JSONObject jobj = JSONObject.fromObject(json);
+				JSONObject jobj = (JSONObject)parser.parse(json);
 				//now deal with tuplespace, and return results
-				String command = jobj.getString(ITupleFields.COMMAND);
-				String tag = jobj.getString(ITupleFields.TAG);
-				String cargo = jobj.getString(ITupleFields.CARGO);
+				String command = (String)jobj.get(ITupleFields.COMMAND);
+				String tag = (String)jobj.get(ITupleFields.TAG);
+				String cargo = (String)jobj.get(ITupleFields.CARGO);
 				String agentName = null;
 				Long idx = null;
 				try {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013, TopicQuests
+ * Copyright 2012, TopicQuests
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
 package org.topicquests.tuplespace;
 import org.semispace.api.ISemiSpaceTuple;
 import org.semispace.Tuple;
-import net.sf.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 /**
  * @author park
  * <p>TODO: add API to handle prioritized tuples</p>
  */
 public class TupleFactory {
 	private TupleSpaceEnvironment environment;
-	
+	private JSONParser parser;
+
 	/**
 	 * @param env
 	 */
 	public TupleFactory(TupleSpaceEnvironment env) {
 		environment = env;
+		parser = new JSONParser();
 	}
 
 	/**
@@ -56,9 +59,10 @@ public class TupleFactory {
 	 * @param tag
 	 * @param json
 	 * @return
+	 * @throws Exception
 	 */
-	public ISemiSpaceTuple newTuple(String tag, String json) {
-		JSONObject jobj = JSONObject.fromObject(json);
+	public ISemiSpaceTuple newTuple(String tag, String json) throws Exception {
+		JSONObject jobj = (JSONObject)parser.parse(json);
 		ISemiSpaceTuple result = new Tuple( environment.getNewId(),tag, jobj);
 		return result;
 	}

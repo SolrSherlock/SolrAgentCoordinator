@@ -1,5 +1,5 @@
 /*
- * Copyright 2013, TopicQuests
+ * Copyright 2012, TopicQuests
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,8 @@ public class TestHarness {
 	 */
 	public static void main(String[] args) {
 		System.out.println("Starting");
-		//TODO add some tests here
-		//new AgentClientTest();
-		new MockTestOne();
-		//System.out.println("Did");
+		new TCPTestTwo();
+		System.out.println("Did");
 	}
 
 }

@@ -23,7 +23,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import org.semispace.api.IConstants;
 import org.semispace.api.ITupleFields;
@@ -79,7 +80,7 @@ public class TCPTestTwo {
 		if (isRead)
 			m.put(ITupleFields.AGENT_NAME, "TCPTestTwo");
 		m.put(ITupleFields.ID, id);
-		JSONObject j = JSONObject.fromObject(m);
+		JSONObject j = new JSONObject(m);
 		return j.toString(); //+"\n"
 	}
 	
