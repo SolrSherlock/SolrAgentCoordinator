@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!-- SolrAgentCoordinator properties
+	These properties configure an "ecosystem" among agents which
+	plug into the SolrAgentFramework
+	20130223 jp2: latest
+	-->
+
+<properties>
+
+	<!-- 
+		The name given to this agent, for use in creating Trace files.
+		The name should be unique for all agents running on the same
+		computer
+	-->
+	<parameter name="SemiSpaceName" value="MySpace94026" />
+	
+	<!--
+		The port on which we listen for requests from SolrAgentFrameworks and
+		other agents who want to talk to us
+	 -->
+	<parameter name="TupleListenPort" value="2930" /> 
+
+	<!-- 
+		provide a list of the server IPs on which SolrInjectors to which
+		we are supposed to listen; value is the port number for that server.
+		We require possibly many since we might be listening to many
+		Solr cores in SolrCloud
+	 -->
+	<list name="SolrInjectors">
+		<parameter name="127.0.0.1" value="2925" />
+	</list>	
+
+</properties>
+
