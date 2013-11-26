@@ -28,14 +28,14 @@ import org.topicquests.util.Tracer;
  *
  */
 public class TupleSpaceEnvironment {
-	private LoggingPlatform log = LoggingPlatform.getInstance();
+	private LoggingPlatform log = LoggingPlatform.getInstance("logger.properties");
 	private List<SolrListenerClient> solrListeners;
 	private ISemiSpace tupleSpace;
 	private AgentListenerClient agentClient;
 	private long _curtime = System.currentTimeMillis();
 	private Object synchObject = new Object();
 	private TupleFactory factory;
-	private Hashtable<String,Object>props;
+	private Map<String,Object>props;
 	
 	/**
 	 * 
